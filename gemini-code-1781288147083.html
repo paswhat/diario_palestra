@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IronJournal - La Mia Scheda</title>
+    <style>
+        :root {
+            --bg-dark: #121214;
+            --bg-card: #1a1a1e;
+            --accent: #00e676;
+            --accent-hover: #00c853;
+            --text-main: #ffffff;
+            --text-muted: #a0a0aa;
+            --border: #2a2a32;
+            --danger: #ff5252;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding: 16px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 12px 0;
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        header h1 span {
+            color: var(--accent);
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        select, input {
+            width: 100%;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            color: var(--text-main);
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--accent);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-col {
+            flex: 1;
+        }
+
+        button {
+            width: 100%;
+            background-color: var(--accent);
+            color: #000000;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-top: 8px;
+        }
+
+        button:active {
+            transform: scale(0.98);
+            background-color: var(--accent-hover);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .clear-btn {
+            background: none;
+            color: var(--danger);
+            border: none;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            width: auto;
+            margin: 0;
+            padding: 4px 8px;
+        }
+
+        .log-item {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .exercise-icon {
+            font-size: 24px;
+            background-color: var(--bg-dark);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+        }
+
+        .log-info {
+            flex: 1;
+        }
+
+        .log-exercise {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .log-date {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .log-details {
+            font-size: 16px;
+            color: var(--accent);
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 30px 0;
+            font-size: 14px;
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Iron<span>Journal</span></h1>
+        <p>Isercizi personalizzati dalla tua scheda</p>
+    </header>
+
+    <div class="card">
+        <div class="form-group">
+            <label for="exercise">Seleziona Esercizio</label>
+            <select id="exercise">
+                <optgroup label="PETTORALI">
+                    <option value="Spinte Piana" data-icon="💪">Spinte Piana</option>
+                    <option value="Spinte Inclinata" data-icon="📈">Spinte Inclinata</option>
+                    <option value="Cavi" data-icon="🪢">Cavi</option>
+                    <option value="Pectoral Machine" data-icon="🤖">Pectoral Machine</option>
+                </optgroup>
+                <optgroup label="DORSALI">
+                    <option value="Lat Machine" data-icon="🏋️‍♂️">Lat Machine</option>
+                    <option value="Pulley Basso" data-icon="🚣">Pulley Basso</option>
+                    <option value="Rematore Manubrio" data-icon="🏋️">Rematore Manubrio</option>
+                    <option value="Trazioni alla Sbarra" data-icon="🦇">Trazioni alla Sbarra</option>
+                </optgroup>
+                <optgroup label="SPALLE">
+                    <option value="Alzate Laterali" data-icon="👐">Alzate Laterali</option>
+                    <option value="Alzate Frontali" data-icon="🙌">Alzate Frontali</option>
+                    <option value="Lento Dietro" data-icon="🪨">Lento Dietro</option>
+                </optgroup>
+                <optgroup label="BICIPITI">
+                    <option value="Curl con Bilanciere" data-icon="🔥">Curl con Bilanciere</option>
+                    <option value="Curl Manubri" data-icon="💪">Curl Manubri</option>
+                    <option value="Curl Pulley Basso" data-icon="⛓️">Curl Pulley Basso</option>
+                </optgroup>
+                <optgroup label="TRICIPITI">
+                    <option value="Estensioni Pulley Alto" data-icon="⚡">Estensioni Pulley Alto</option>
+                    <option value="Distensioni Parallele" data-icon="⏸️">Distensioni Parallele</option>
+                </optgroup>
+                <optgroup label="GAMBE / GLUTEI">
+                    <option value="Leg Press" data-icon="🩼">Leg Press</option>
+                    <option value="Affondi" data-icon="🏃">Affondi</option>
+                    <option value="Leg Extension" data-icon="🦵">Leg Extension</option>
+                    <option value="Squat" data-icon="🏋️‍♂️">Squat</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div class="input-row">
+            <div class="input-col">
+                <div class="form-group">
+                    <label for="weight">Peso (Kg)</label>
+                    <input type="number" id="weight" placeholder="0" min="0" step="0.5" inputmode="decimal">
+                </div>
+            </div>
+            <div class="input-col">
+                <div class="form-group">
+                    <label for="reps">Ripetizioni</label>
+                    <input type="number" id="reps" placeholder="0" min="0" inputmode="numeric">
+                </div>
+            </div>
+        </div>
+
+        <button id="saveBtn">Salva Serie</button>
+    </div>
+
+    <div>
+        <div class="section-title">
+            <span>Cronologia Allenamento</span>
+            <button class="clear-btn" id="clearBtn">Svuota diario</button>
+        </div>
+        <div id="logContainer">
+            <!-- I dati inseriti appariranno qui -->
+        </div>
+    </div>
+
+    <script>
+        const exerciseInput = document.getElementById('exercise');
+        const weightInput = document.getElementById('weight');
+        const repsInput = document.getElementById('reps');
+        const saveBtn = document.getElementById('saveBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const logContainer = document.getElementById('logContainer');
+
+        let workoutLogs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+
+        function renderLogs() {
+            logContainer.innerHTML = '';
+
+            if (workoutLogs.length === 0) {
+                logContainer.innerHTML = '<div class="empty-state">Nessuna serie registrata. Seleziona un esercizio della scheda!</div>';
+                return;
+            }
+
+            [...workoutLogs].reverse().forEach((log) => {
+                const item = document.createElement('div');
+                item.className = 'log-item';
+                item.innerHTML = `
+                    <div class="exercise-icon">${log.icon || '💪'}</div>
+                    <div class="log-info">
+                        <div class="log-exercise">${log.exercise}</div>
+                        <div class="log-date">${log.date}</div>
+                    </div>
+                    <div class="log-details">${log.weight} Kg &times; ${log.reps}</div>
+                `;
+                logContainer.appendChild(item);
+            });
+        }
+
+        saveBtn.addEventListener('click', () => {
+            const exercise = exerciseInput.value;
+            const selectedOption = exerciseInput.options[exerciseInput.selectedIndex];
+            const icon = selectedOption.getAttribute('data-icon');
+            const weight = weightInput.value;
+            const reps = repsInput.value;
+
+            if (!weight || !reps || weight <= 0 || reps <= 0) {
+                alert('Inserisci dati corretti per peso e ripetizioni.');
+                return;
+            }
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+            const newLog = {
+                exercise: exercise,
+                icon: icon,
+                weight: parseFloat(weight),
+                reps: parseInt(reps),
+                date: dateStr
+            };
+
+            workoutLogs.push(newLog);
+            localStorage.setItem('workoutLogs', JSON.stringify(workoutLogs));
+
+            weightInput.value = '';
+            repsInput.value = '';
+            renderLogs();
+        });
+
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Vuoi cancellare lo storico degli allenamenti?')) {
+                workoutLogs = [];
+                localStorage.removeItem('workoutLogs');
+                renderLogs();
+            }
+        });
+
+        renderLogs();
+    </script>
+</body>
+</html>
