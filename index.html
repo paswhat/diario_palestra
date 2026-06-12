@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="it" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GymDiary - La tua scheda intelligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        gym: {
+                            lightBg: '#F8F9FB',
+                            lightCard: '#FFFFFF',
+                            lightText: '#1A1A1A',
+                            lightMuted: '#6B7280',
+                            lightAccent: '#2563EB',
+                            
+                            darkBg: '#0F1115',
+                            darkCard: '#171A21',
+                            darkText: '#F3F4F6',
+                            darkMuted: '#9CA3AF',
+                            darkAccent: '#3B82F6',
+                            
+                            success: '#10B981',
+                            warning: '#F59E0B',
+                            danger: '#EF4444'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-neutral-900 dark:bg-[#0F1115] dark:text-[#F3F4F6] min-h-screen transition-colors duration-200 pb-24">
+
+    <div class="max-w-md mx-auto px-4 pt-6">
+        
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-800 tracking-tight font-bold">Gym<span class="text-blue-600 dark:text-blue-500">Diary</span></h1>
+                <p class="text-xs text-neutral-500 dark:text-[#9CA3AF] mt-0.5">La tua scheda cartacea intelligente.</p>
+            </div>
+            <button id="themeToggle" class="p-2.5 rounded-xl bg-white dark:bg-[#171A21] border border-neutral-200 dark:border-neutral-800 shadow-sm text-lg target:min-h-[44px]">
+                🌓
+            </button>
+        </div>
+
+        <div id="view-home" class="router-view space-y-6">
+            <div class="bg-white dark:bg-[#171A21] border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm">
+                <h2 class="text-xl font-bold tracking-tight">Eccoci. Cosa alleni oggi?</h2>
+                <div id="pr-badge-container" class="mt-3 flex flex-wrap gap-2">
+                    </div>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-neutral-400">Le tue schede</h3>
+                    <button onclick="openCreateTemplateModal()" class="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1">+ Nuova Scheda</button>
+                </div>
+                <div id="templates-list" class="space-y-3">
+                    </div>
+            </div>
+
+            <div class="bg-white dark:bg-[#171A21] border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm">
+                <h3 class="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">Costanza nell'allenamento</h3>
+                <div class="grid grid-flow-col grid-rows-7 gap-1.5 justify-start overflow-x-auto no-scrollbar py-1" id="github-calendar">
+                    </div>
+                <div class="flex justify-between items-center mt-3 text-[11px] text-neutral-400">
+                    <span>Meno attivo</span>
+                    <div class="flex gap-1">
+                        <div class="w-2.5 h-2.5 rounded-sm bg-neutral-200 dark:bg-neutral-800"></div>
+                        <div class="w-2.5 h-2.5 rounded-sm bg-blue-200 dark:bg-blue-900"></div>
+                        <div class="w-2.5 h-2.5 rounded-sm bg-blue-400 dark:bg-blue-600"></div>
+                        <div class="w-2.5 h-2.5 rounded-sm bg-blue-600 dark:bg-blue-400"></div>
+                    </div>
+                    <span>Più attivo</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-workout" class="router-view space-y-6 hidden">
+            <div class="flex justify-between items-center bg-white dark:bg-[#171A21] border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-sm">
+                <div>
+                    <h2 id="active-workout-name" class="text-lg font-bold">Allenamento Attivo</h2>
+                    <p id="active-workout-timer" class="text-sm font-mono text-blue-600 dark:text-blue-400 font-semibold">00:00:00</p>
+                </div>
+                <button onclick="finishWorkoutSession()" class="bg-emerald-500 hover:bg-emerald-600 text-black text-xs font-bold px-4 py-2.5 rounded-xl transition-all">
+                    Termina
+                </button>
+            </div>
+
+            <div id="active-exercise-card" class="bg-white dark:bg-[#171A21] border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm space-y-4">
+                <div class="flex items-center gap-3">
+                    <div id="active-exercise-svg" class="w-12 h-12 bg-slate-100 dark:bg-[#0F1115] rounded-xl flex items-center justify-center text-xl border border-neutral-200 dark:border-neutral-800">
+                        🏋️‍♂️
+                    </div>
+                    <div>
+                        <h3 id="active-exercise-name" class="font-bold text-lg">Nome Esercizio</h3>
+                        <p id="active-exercise-muscle" class="text-xs text-neutral-400 uppercase tracking-wider font-semibold">Petto</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 dark:bg-[#0F1115] rounded-xl p-3 border border-neutral-200 dark:border-neutral-800 text-xs text-neutral-500 dark:text-neutral-400 flex justify-between items-center">
+                    <span>Target ultima sessione:</span>
+                    <span id="active-exercise-history" class="font-mono font-bold text-neutral-800 dark:text-neutral-200">Nessun dato precedente</span>
+                </div>
+
+                <div id="progression-tip" class="hidden text-xs bg-amber-500/10 border border-amber-500/20 text-amber-500 px-3 py-2 rounded-xl font-medium"></div>
+
+                <div class="space-y-3 pt-2">
+                    <div class="flex items-center justify-between text-xs font-bold text-neutral-400 px-1">
+                        <span class="w-12 text-center">SERIE</span>
+                        <span class="flex-1 text-center">KG</span>
+                        <span class="flex-1 text-center">REPS</span>
+                        <span class="w-12"></span>
+                    </div>
+                    <div id="active-sets-rows-container" class="space-y-2">
+                        </div>
+                    <button onclick="addSetToActiveExercise()" class="w-100 py-3 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-500 hover:text-blue-500 transition-all flex justify-center items-center gap-1 w-full mt-2">
+                        + Aggiungi Serie
+                    </button>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button id="prev-exercise-btn" onclick="navigateActiveExercise(-1)" class="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-neutral-800 text-xs font-bold text-center">
+                        Precedente
+                    </button>
+                    <button id="next-exercise-btn" onclick="navigateActiveExercise(1)" class="flex-1 py-3 rounded-xl bg-blue-600 text-white dark:bg-blue-500 dark:text-black text-xs font-bold text-center">
+                        Prossimo Esercizio
+                    </button>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-[#171A21] border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-sm">
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Note Sessione</label>
+                <textarea id="session-notes-input" placeholder="Es. Dormito poco, panca molto fluida..." class="w-full bg-slate-50 dark:bg-[#0F1115] border border-neutral-200 dark:border-neutral-800 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-500 h-20 resize-none"></textarea>
+            </div>
+        </div>
+
+        <div id="view-history" class="router-view space-y-4 hidden">
+            <h2 class="text-xl font-bold tracking-tight mb-2">Storico Allenamenti</h2>
+            <div id="history-container" class="space-y-4">
+                </div>
+        </div>
+
+    </div>
+
+    <div id="hud-timer-overlay" class="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-blue-600 text-white dark:bg-blue-500 dark:text-black p-4 rounded-2xl shadow-xl flex items-center justify-between transform translate-y-32 opacity-0 pointer-events-none transition-all duration-300 z-50">
+        <div class="flex items-center gap-3">
+            <span class="text-xl">⏱️</span>
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider opacity-70">Recupero in corso</p>
+                <p id="hud-timer-clock" class="text-xl font-mono font-bold leading-none mt-0.5">00:00</p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="adjustTimer(15)" class="bg-white/20 hover:bg-white/30 px-2.5 py-1.5 rounded-lg text-xs font-bold">+15s</button>
+            <button onclick="skipTimer()" class="bg-black text-white dark:bg-white dark:text-black px-3 py-1.5 rounded-lg text-xs font-bold">Salta</button>
+        </div>
+    </div>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#171A21] border-t border-neutral-200 dark:border-neutral-800 px-6 py-2 flex justify-around items-center z-40 max-w-md mx-auto shadow-lg">
+        <button onclick="switchView('home')" id="nav-home" class="flex flex-col items-center gap-0.5 text-blue-600 dark:text-blue-500 py-1 px-3 min-h-[44px]">
+            <span class="text-lg">🏋️‍♂️</span>
+            <span class="text-[10px] font-medium font-semibold">Allenati</span>
+        </button>
+        <button onclick="switchView('history')" id="nav-history" class="flex flex-col items-center gap-0.5 text-neutral-400 py-1 px-3 min-h-[44px]">
+            <span class="text-lg">📊</span>
+            <span class="text-[10px] font-medium font-semibold">Storico</span>
+        </button>
+    </nav>
+
+    <div id="modal-create-template" class="fixed inset-0 bg-black/60 z-50 flex items-end justify-center hidden p-4 opacity-0 transition-opacity duration-200">
+        <div class="bg-white dark:bg-[#171A21] w-full max-w-md rounded-t-3xl md:rounded-2xl p-6 space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar transform translate-y-10 transition-transform duration-200">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold">Crea Nuova Scheda</h3>
+                <button onclick="closeCreateTemplateModal()" class="text-xl">✕</button>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-1">Nome Scheda</label>
+                <input type="text" id="new-template-name" placeholder="Es. Push A, Gambe, Upper Body" class="w-full bg-slate-50 dark:bg-[#0F1115] border border-neutral-200 dark:border-neutral-800 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Seleziona Esercizi</label>
+                <div id="modal-exercises-selector" class="space-y-4 max-h-60 overflow-y-auto pr-1">
+                    </div>
+            </div>
+            <button onclick="saveNewTemplate()" class="w-full bg-blue-600 text-white dark:bg-blue-500 dark:text-black py-3.5 rounded-xl text-sm font-bold shadow-md">
+                Salva Scheda nel Database
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // DATA MODEL SEED: EXERCISE DICTIONARY 
+        const EXERCISE_CATALOG = {
+            "Petto": [
+                { id: "panca_piana_b", name: "Panca piana bilanciere", icon: "🏋️‍♂️", time: 90 },
+                { id: "panca_piana_m", name: "Panca piana manubri", icon: "💪", time: 90 },
+                { id: "panca_inc_b", name: "Panca inclinata bilanciere", icon: "📈", time: 90 },
+                { id: "panca_inc_m", name: "Panca inclinata manubri", icon: "💪", time: 90 },
+                { id: "chest_press", name: "Chest Press", icon: "🤖", time: 60 },
+                { id: "croci_manubri", name: "Croci manubri", icon: "👐", time: 60 },
+                { id: "croci_cavi", name: "Croci ai cavi", icon: "🪢", time: 60 },
+                { id: "pec_deck", name: "Pec Deck", icon: "🤖", time: 60 },
+                { id: "push_up", name: "Push Up", icon: "🧘", time: 45 },
+                { id: "dip_petto", name: "Dip focus petto", icon: "⏸️", time: 90 }
+            ],
+            "Dorso": [
+                { id: "lat_larga", name: "Lat Machine presa larga", icon: "🏋️‍♂️", time: 75 },
+                { id: "lat_inversa", name: "Lat Machine inversa", icon: "🏋️‍♂️", time: 75 },
+                { id: "trazioni_prone", name: "Trazioni prone", icon: "🦇", time: 90 },
+                { id: "trazioni_supine", name: "Trazioni supine", icon: "🦇", time: 90 },
+                { id: "pulldown", name: "Pulldown", icon: "🪢", time: 60 },
+                { id: "pullover_cavo", name: "Pullover cavo", icon: "🪢", time: 60 },
+                { id: "pullover_man", name: "Pullover manubrio", icon: "💪", time: 75 },
+                { id: "rematore_b", name: "Rematore bilanciere", icon: "🏋️", time: 90 },
+                { id: "rematore_m", name: "Rematore manubrio", icon: "🏋️", time: 75 },
+                { id: "tbar_row", name: "T-Bar Row", icon: "🏋️", time: 90 },
+                { id: "pulley_basso", name: "Pulley basso", icon: "🚣", time: 75 },
+                { id: "rowing_machine", name: "Rowing Machine", icon: "🤖", time: 75 }
+            ],
+            "Spalle": [
+                { id: "military_press", name: "Military Press", icon: "🪨", time: 90 },
+                { id: "shoulder_press_m", name: "Shoulder Press manubri", icon: "💪", time: 75 },
+                { id: "shoulder_press_mac", name: "Shoulder Press macchina", icon: "🤖", time: 60 },
+                { id: "arnold_press", name: "Arnold Press", icon: "💪", time: 75 },
+                { id: "alzate_frontali", name: "Alzate frontali", icon: "🙌", time: 60 },
+                { id: "alzate_laterali", name: "Alzate laterali", icon: "👐", time: 60 },
+                { id: "alzate_lat_cavi", name: "Alzate laterali ai cavi", icon: "🪢", time: 60 },
+                { id: "reverse_pecdeck", name: "Reverse Pec Deck", icon: "🤖", time: 60 },
+                { id: "face_pull", name: "Face Pull", icon: "🪢", time: 60 }
+            ],
+            "Bicipiti": [
+                { id: "curl_bilanciere", name: "Curl bilanciere", icon: "🔥", time: 60 },
+                { id: "curl_ez", name: "Curl EZ", icon: "🔥", time: 60 },
+                { id: "curl_manubri_alt", name: "Curl manubri alternati", icon: "💪", time: 60 },
+                { id: "hammer_curl", name: "Hammer Curl", icon: "💪", time: 60 },
+                { id: "curl_inclinato", name: "Curl inclinato", icon: "💪", time: 60 },
+                { id: "curl_scott", name: "Curl Scott", icon: "🔥", time: 60 }
+            ],
+            "Tricipiti": [
+                { id: "pushdown_barra", name: "Pushdown barra", icon: "⚡", time: 60 },
+                { id: "pushdown_corda", name: "Pushdown corda", icon: "⚡", time: 60 },
+                { id: "estensioni_sopra_testa", name: "Estensioni sopra testa", icon: "💪", time: 60 },
+                { id: "french_press_ez", name: "French Press EZ", icon: "🔥", time: 75 },
+                { id: "skull_crusher", name: "Skull Crusher", icon: "🔥", time: 75 },
+                { id: "dip_tricipiti", name: "Dip focus tricipiti", icon: "⏸️", time: 75 }
+            ],
+            "Quadricipiti": [
+                { id: "squat", name: "Squat", icon: "🏋️‍♂️", time: 120 },
+                { id: "front_squat", name: "Front Squat", icon: "🏋️‍♂️", time: 120 },
+                { id: "hack_squat", name: "Hack Squat", icon: "🤖", time: 90 },
+                { id: "leg_press", name: "Leg Press", icon: "🩼", time: 90 },
+                { id: "bulgarian_split", name: "Bulgarian Split Squat", icon: "🏃", time: 75 },
+                { id: "leg_extension", name: "Leg Extension", icon: "🦵", time: 60 }
+            ],
+            "Femorali": [
+                { id: "stacco_rumeno", name: "Stacco rumeno", icon: "🏋️‍♂️", time: 90 },
+                { id: "leg_curl_sdraiato", name: "Leg Curl sdraiato", icon: "🤖", time: 60 },
+                { id: "leg_curl_seduto", name: "Leg Curl seduto", icon: "🤖", time: 60 }
+            ],
+            "Glutei": [
+                { id: "hip_thrust", name: "Hip Thrust", icon: "🍑", time: 90 },
+                { id: "abduzioni_macchina", name: "Abduzioni macchina", icon: "🤖", time: 60 }
+            ],
+            "Polpacci": [
+                { id: "calf_raise_in_piedi", name: "Calf Raise in piedi", icon: "🦵", time: 45 },
+                { id: "calf_raise_seduto", name: "Calf Raise seduto", icon: "🦵", time: 45 }
+            ],
+            "Addome": [
+                { id: "crunch", name: "Crunch", icon: "🧘", time: 45 },
+                { id: "sit_up", name: "Sit Up", icon: "🧘", time: 45 },
+                { id: "plank", name: "Plank", icon: "⏳", time: 45 }
+            ],
+            "Lombari": [
+                { id: "back_extension", name: "Back Extension", icon: "🧘", time: 60 }
+            ],
+            "Cardio": [
+                { id: "tapis_roulant", name: "Tapis roulant", icon: "🏃", time: 30 },
+                { id: "cyclette", name: "Cyclette", icon: "🚴", time: 30 },
+                { id: "ellittica", name: "Ellittica", icon: "🚴", time: 30 }
+            ]
+        };
+
+        // GLOBAL STATES VARIABLES (Local Database Sync Engine)
+        let templates = JSON.parse(localStorage.getItem('gym_templates')) || [
+            { id: "tmpl_1", name: "Push A (Petto/Spalle/Tri)", exercises: ["panca_piana_b", "chest_press", "alzate_laterali", "pushdown_corda"] },
+            { id: "tmpl_2", name: "Pull B (Dorso/Bicipiti)", exercises: ["trazioni_prone", "pulley_basso", "curl_manubri_alt", "hammer_curl"] }
+        ];
+        let historyLogs = JSON.parse(localStorage.getItem('gym_history')) || [];
+        let personalRecords = JSON.parse(localStorage.getItem('gym_pr')) || {};
+
+        // ACTIVE SESSION STATE
+        let activeSession = null; 
+        let sessionTimerInterval = null;
+        let hudTimerInterval = null;
+        let hudTimeRemaining = 0;
+
+        // APPLICATION INITIALIZATION ENGINE
+        window.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            renderTemplatesList();
+            renderPRBadges();
+            generateGitHubCalendar();
+            setupThemeToggleListener();
+            renderModalExercisesSelector();
+        });
+
+        // VIEW NAVIGATION CONTROLLER
+        function switchView(viewName) {
+            document.querySelectorAll('.router-view').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${viewName}`).classList.remove('hidden');
+            
+            // Toggle Tab Bar State Style
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('text-blue-600', 'dark-text-blue-500'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.add('text-neutral-400'));
+            
+            const activeNavButton = document.getElementById(`nav-${viewName}`);
+            if(activeNavButton) {
+                activeNavButton.classList.remove('text-neutral-400');
+                activeNavButton.classList.add('text-blue-600', 'dark:text-blue-500');
+            }
+
+            if(viewName === 'history') {
+                renderHistoryLogs();
+            }
+        }
+
+        // WORKOUT TEMPLATES RENDERING ENGINE
+        function renderTemplatesList() {
+            const container = document.getElementById('templates-list');
+            container.innerHTML = '';
+            
+            templates.forEach(t => {
+                // Find stats metrics mock
+                const exerciseCount = t.exercises.length;
+                
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-[#171A21] border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm flex flex-col justify-between";
+                card.innerHTML = `
+                    <div class="mb-4">
+                        <h4 class="text-base font-bold tracking-tight">${t.name}</h4>
+                        <p class="text-xs text-neutral-400 mt-1">${exerciseCount} esercizi • Durata media: ~1h 05m</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="startWorkoutSession('${t.id}')" class="flex-1 bg-blue-600 text-white dark:bg-blue-500 dark:text-black py-2.5 rounded-xl text-xs font-bold shadow-sm target:min-h-[44px]">Inizia</button>
+                        <button onclick="deleteTemplate('${t.id}')" class="p-2.5 text-xs text-neutral-400 hover:text-red-500 rounded-xl bg-slate-50 dark:bg-[#0F1115] border border-neutral-200 dark:border-neutral-800 target:min-h-[44px]">Elimina</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // WORKOUT RUNTIME ACTIVE SESSION ENGINE
+        function startWorkoutSession(templateId) {
+            const template = templates.find(t => t.id === templateId);
+            if(!template) return;
+
+            // Generate Schema Model Structure matching Prisma spec requirements
+            activeSession = {
+                id: 'sess_' + Date.now(),
+                templateName: template.name,
+                startTime: Date.now(),
+                exercises: template.exercises.map(exId => {
+                    const baseEx = findExerciseInCatalog(exId);
+                    // PULL LAST SESSION DATA FOR SMART COPIA SESSIONE PRECOMPILATA
+                    const lastExecution = findLastExerciseExecution(exId);
+                    const defaultSets = lastExecution ? lastExecution.sets.map(s => ({ kg: s.kg, reps: s.reps, done: false })) : [{ kg: 0, reps: 0, done: false }];
+                    
+                    return {
+                        id: exId,
+                        name: baseEx ? baseEx.name : "Esercizio",
+                        icon: baseEx ? baseEx.icon : "🏋️‍♂️",
+                        muscle: findMuscleGroupOfExercise(exId),
+                        restTime: baseEx ? baseEx.time : 60,
+                        sets: defaultSets
+                    };
+                }),
+                currentExerciseIndex: 0
+            };
+
+            switchView('workout');
+            initActiveSessionTimer();
+            syncActiveExerciseCard();
+        }
+
+        function syncActiveExerciseCard() {
+            if(!activeSession) return;
+            const currentEx = activeSession.exercises[activeSession.currentExerciseIndex];
+            
+            document.getElementById('active-workout-name').innerText = activeSession.templateName;
+            document.getElementById('active-exercise-name').innerText = currentEx.name;
+            document.getElementById('active-exercise-muscle').innerText = currentEx.muscle;
+            document.getElementById('active-exercise-svg').innerText = currentEx.icon;
+
+            // Load last historical records UI
+            const lastExecution = findLastExerciseExecution(currentEx.id);
+            const historySpan = document.getElementById('active-exercise-history');
+            if(lastExecution && lastExecution.sets.length > 0) {
+                historySpan.innerText = lastExecution.sets.map(s => `${s.kg}kg × ${s.reps}`).join(' | ');
+            } else {
+                historySpan.innerText = "Nessun record precedente.";
+            }
+
+            // Auto-Progression Engine logic analysis
+            const tipBox = document.getElementById('progression-tip');
+            if(lastExecution && lastExecution.sets.every(s => s.reps >= 10)) { // target threshold limit set to 10 reps
+                tipBox.innerText = "🎯 Hai raggiunto il target nell'ultimo allenamento! Prova ad aumentare il carico di +2.5 Kg.";
+                tipBox.classList.remove('hidden');
+            } else {
+                tipBox.classList.add('hidden');
+            }
+
+            // Render interactive set items rows
+            renderActiveSetsRows(currentEx);
+
+            // Setup buttons visibility state targets
+            document.getElementById('prev-exercise-btn').style.visibility = activeSession.currentExerciseIndex === 0 ? 'hidden' : 'visible';
+            if(activeSession.currentExerciseIndex === activeSession.exercises.length - 1) {
+                document.getElementById('next-exercise-btn').innerText = "Fine Esercizi";
+            } else {
+                document.getElementById('next-exercise-btn').innerText = "Prossimo Esercizio";
+            }
+        }
+
+        function renderActiveSetsRows(exercise) {
+            const container = document.getElementById('active-sets-rows-container');
+            container.innerHTML = '';
+
+            exercise.sets.forEach((set, index) => {
+                const row = document.createElement('div');
+                row.className = `flex items-center justify-between gap-2 p-1.5 rounded-xl transition-all duration-200 ${set.done ? 'bg-emerald-500/10 border border-emerald-500/20' : ''}`;
+                row.innerHTML = `
+                    <span class="w-12 text-center font-bold text-sm text-neutral-400">${index + 1}</span>
+                    <div class="flex-1 flex items-center bg-slate-50 dark:bg-[#0F1115] border border-neutral-200 dark:border-neutral-800 rounded-xl px-2">
+                        <button onclick="adjustSetField(${index}, 'kg', -2.5)" class="p-2 font-bold text-lg text-neutral-400 hover:text-white">-</button>
+                        <input type="number" step="0.5" value="${set.kg}" onchange="updateSetInputValue(${index}, 'kg', this.value)" class="w-full bg-transparent text-center font-semibold text-sm focus:outline-none py-2 font-mono">
+                        <button onclick="adjustSetField(${index}, 'kg', 2.5)" class="p-2 font-bold text-lg text-neutral-400 hover:text-white">+</button>
+                    </div>
+                    <div class="flex-1 flex items-center bg-slate-50 dark:bg-[#0F1115] border border-neutral-200 dark:border-neutral-800 rounded-xl px-2">
+                        <button onclick="adjustSetField(${index}, 'reps', -1)" class="p-2 font-bold text-lg text-neutral-400 hover:text-white">-</button>
+                        <input type="number" value="${set.reps}" onchange="updateSetInputValue(${index}, 'reps', this.value)" class="w-full bg-transparent text-center font-semibold text-sm focus:outline-none py-2 font-mono">
+                        <button onclick="adjustSetField(${index}, 'reps', 1)" class="p-2 font-bold text-lg text-neutral-400 hover:text-white">+</button>
+                    </div>
+                    <button onclick="toggleSetDone(${index})" class="w-12 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm target:min-h-[44px] ${set.done ? 'bg-emerald-500 text-black' : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-400'}">
+                        ${set.done ? '✓' : '◯'}
+                    </button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // DATA INPUT HANDLERS
+        function adjustSetField(setIndex, field, value) {
+            const currentEx = activeSession.exercises[activeSession.currentExerciseIndex];
+            let currentVal = parseFloat(currentEx.sets[setIndex][field]) || 0;
+            currentEx.sets[setIndex][field] = Math.max(0, currentVal + value);
+            renderActiveSetsRows(currentEx);
+        }
+
+        function updateSetInputValue(setIndex, field, value) {
+            const currentEx = activeSession.exercises[activeSession.currentExerciseIndex];
+            currentEx.sets[setIndex][field] = Math.max(0, parseFloat(value) || 0);
+        }
+
+        function toggleSetDone(setIndex) {
+            const currentEx = activeSession.exercises[activeSession.currentExerciseIndex];
+            const set = currentEx.sets[setIndex];
+            set.done = !set.done;
+            
+            // PR Record Progression Validation Trigger
+            if(set.done) {
+                checkAndUpdatePersonalRecord(currentEx.id, currentEx.name, set.kg, set.reps);
+                startRestTimer(currentEx.restTime);
+            }
+            renderActiveSetsRows(currentEx);
+        }
+
+        function addSetToActiveExercise() {
+            const currentEx = activeSession.exercises[activeSession.currentExerciseIndex];
+            const lastSet = currentEx.sets[currentEx.sets.length - 1] || { kg: 0, reps: 0 };
+            currentEx.sets.push({ kg: lastSet.kg, reps: lastSet.reps, done: false });
+            renderActiveSetsRows(currentEx);
+        }
+
+        function navigateActiveExercise(dir) {
+            if(!activeSession) return;
+            const targetIndex = activeSession.currentExerciseIndex + dir;
+            if(targetIndex >= 0 && targetIndex < activeSession.exercises.length) {
+                activeSession.currentExerciseIndex = targetIndex;
+                syncActiveExerciseCard();
+            } else if(targetIndex >= activeSession.exercises.length) {
+                finishWorkoutSession();
+            }
+        }
+
+        // PERSISTENCE ENGINE: WORKOUT TERMINATION LOGIC
+        function finishWorkoutSession() {
+            if(!activeSession) return;
+            clearInterval(sessionTimerInterval);
+            
+            const elapsedMs = Date.now() - activeSession.startTime;
+            const minutes = Math.floor(elapsedMs / 60000);
+            
+            const completedSessionLog = {
+                id: activeSession.id,
+                templateName: activeSession.templateName,
+                date: new Date().toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+                timestamp: Date.now(),
+                duration: `${minutes}m`,
+                notes: document.getElementById('session-notes-input').value || '',
+                exercises: activeSession.exercises.map(ex => ({
+                    id: ex.id,
+                    name: ex.name,
+                    sets: ex.sets.filter(s => s.done).map(s => ({ kg: s.kg, reps: s.reps }))
+                })).filter(ex => ex.sets.length > 0)
+            };
+
+            historyLogs.push(completedSessionLog);
+            localStorage.setItem('gym_history', JSON.stringify(historyLogs));
+            
+            // Cleanup states
+            activeSession = null;
+            document.getElementById('session-notes-input').value = '';
+            
+            // Refresh views
+            renderPRBadges();
+            generateGitHubCalendar();
+            renderTemplatesList();
+            switchView('home');
+            
+            alert('Allenamento salvato con successo nello storico!');
+        }
+
+        // GLOBAL REST TIMER SERVICE OVERLAY HUD
+        function startRestTimer(durationSeconds) {
+            clearInterval(hudTimerInterval);
+            hudTimeRemaining = durationSeconds;
+            
+            const overlay = document.getElementById('hud-timer-overlay');
+            const clock = document.getElementById('hud-timer-clock');
+            
+            overlay.classList.remove('translate-y-32', 'opacity-0', 'pointer-events-none');
+            
+            hudTimerInterval = setInterval(() => {
+                hudTimeRemaining--;
+                const mins = Math.floor(hudTimeRemaining / 60).toString().padStart(2, '0');
+                const secs = (hudTimeRemaining % 60).toString().padStart(2, '0');
+                clock.innerText = `${mins}:${secs}`;
+                
+                if(hudTimeRemaining <= 0) {
+                    clearInterval(hudTimerInterval);
+                    overlay.classList.add('translate-y-32', 'opacity-0', 'pointer-events-none');
+                    if (window.navigator.vibrate) window.navigator.vibrate([200, 100, 200]);
+                }
+            }, 1000);
+        }
+
+        function adjustTimer(secs) {
+            hudTimeRemaining += secs;
+        }
+
+        function skipTimer() {
+            hudTimeRemaining = 0;
+            document.getElementById('hud-timer-overlay').classList.add('translate-y-32', 'opacity-0', 'pointer-events-none');
+            clearInterval(hudTimerInterval);
+        }
+
+        // PERSONAL RECORD VALIDATOR ENGINE
+        function checkAndUpdatePersonalRecord(exId, exName, kg, reps) {
+            let prUpdated = false;
+            if(!personalRecords[exId]) {
+                personalRecords[exId] = { name: exName, maxKg: kg, maxReps: reps, timestamp: Date.now() };
+                prUpdated = true;
+            } else {
+                if(kg > personalRecords[exId].maxKg) {
+                    personalRecords[exId].maxKg = kg;
+                    personalRecords[exId].maxReps = reps;
+                    personalRecords[exId].timestamp = Date.now();
+                    prUpdated = true;
+                }
+            }
+            if(prUpdated) {
+                localStorage.setItem('gym_pr', JSON.stringify(personalRecords));
+            }
+        }
+
+        function renderPRBadges() {
+            const container = document.getElementById('pr-badge-container');
+            container.innerHTML = '';
+            
+            const records = Object.values(personalRecords).sort((a,b) => b.timestamp - a.timestamp).slice(0, 3);
+            if(records.length === 0) {
+                container.innerHTML = `<span class="text-xs text-neutral-400">Nessun record recente ancora registrato. Spingi quel ferro!</span>`;
+                return;
+            }
+
+            records.forEach(pr => {
+                const badge = document.createElement('span');
+                badge.className = "inline-flex items-center gap-1 text-[11px] font-semibold bg-blue-500/10 border border-blue-500/20 text-blue-500 px-2.5 py-1 rounded-full shadow-sm";
+                badge.innerHTML = `🏆 ${pr.name} +${pr.maxKg}kg`;
+                container.appendChild(badge);
+            });
+        }
+
+        // HISTORY VIEWS GENERATION
+        function renderHistoryLogs() {
+            const container = document.getElementById('history-container');
+            container.innerHTML = '';
+
+            if(historyLogs.length === 0) {
+                container.innerHTML = `<div class="text-center p-8 text-sm text-neutral-400 border border-dashed border-neutral-800 rounded-2xl">Lo storico è vuoto. Completa il tuo primo allenamento per popolarlo!</div>`;
+                return;
+            }
+
+            [...historyLogs].reverse().forEach(log => {
+                const logCard = document.createElement('div');
+                logCard.className = "bg-white dark:bg-[#171A21] border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 space-y-3 shadow-sm";
+                
+                let exercisesHTML = '';
+                log.exercises.forEach(ex => {
+                    exercisesHTML += `
+                        <div class="text-xs">
+                            <span class="font-bold text-neutral-800 dark:text-neutral-200">${ex.name}</span>
+                            <span class="font-mono text-neutral-400 ml-2">${ex.sets.map(s => `${s.kg}kg×${s.reps}`).join(', ')}</span>
+                        </div>
+                    `;
+                });
+
+                logCard.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-neutral-100 dark:border-neutral-800 pb-2">
+                        <div>
+                            <h4 class="font-bold text-sm">${log.templateName}</h4>
+                            <p class="text-[11px] text-neutral-400">${log.date} • Durata: ${log.duration}</p>
+                        </div>
+                        <span class="text-xs font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-md">Completato</span>
+                    </div>
+                    <div class="space-y-1.5">${exercisesHTML}</div>
+                    ${log.notes ? `<div class="text-[11px] italic bg-slate-50 dark:bg-[#0F1115] p-2 rounded-xl text-neutral-400 border border-neutral-200 dark:border-neutral-800">Note: ${log.notes}</div>` : ''}
+                `;
+                container.appendChild(logCard);
+            });
+        }
+
+        // REPOSITORY ENGINE: UTILS SEARCH SCHEMAS
+        function findExerciseInCatalog(id) {
+            for(let key in EXERCISE_CATALOG) {
+                const match = EXERCISE_CATALOG[key].find(e => e.id === id);
+                if(match) return match;
+            }
+            return null;
+        }
+
+        function findMuscleGroupOfExercise(id) {
+            for(let key in EXERCISE_CATALOG) {
+                if(EXERCISE_CATALOG[key].some(e => e.id === id)) return key;
+            }
+            return "General";
+        }
+
+        function findLastExerciseExecution(exId) {
+            // Traverse history backward to look for the last set arrays
+            for(let i = historyLogs.length - 1; i >= 0; i--) {
+                const matchEx = historyLogs[i].exercises.find(e => e.id === exId);
+                if(matchEx) return matchEx;
+            }
+            return null;
+        }
+
+        // ACTIVE TIMERS RUNTIME SPEED
+        function initActiveSessionTimer() {
+            clearInterval(sessionTimerInterval);
+            const clockEl = document.getElementById('active-workout-timer');
+            const start = activeSession.startTime;
+
+            sessionTimerInterval = setInterval(() => {
+                const elapsed = Date.now() - start;
+                const hrs = Math.floor(elapsed / 3600000).toString().padStart(2, '0');
+                const mins = Math.floor((elapsed % 3600000) / 60000).toString().padStart(2, '0');
+                const secs = Math.floor((elapsed % 60000) / 1000).toString().padStart(2, '0');
+                clockEl.innerText = `${hrs}:${mins}:${secs}`;
+            }, 1000);
+        }
+
+        // COMPONENT GENERATOR: GITHUB STYLE GRID CALENDAR
+        function generateGitHubCalendar() {
+            const grid = document.getElementById('github-calendar');
+            grid.innerHTML = '';
+            
+            // Map workout logs history timestamps matching specific days
+            const loggedDates = historyLogs.map(l => l.date);
+
+            // Generate exactly 7 rows x 24 columns block squares matrix for viewport optimization on mobile portrait
+            for (let i = 0; i < 154; i++) {
+                const dot = document.createElement('div');
+                dot.className = "w-3 h-3 rounded-sm transition-all duration-300 bg-neutral-200 dark:bg-neutral-800";
+                
+                // Mock execution matching active costanza activity
+                if(i > 0 && i % 8 === 0 && historyLogs.length > 0) {
+                    dot.classList.remove('bg-neutral-200', 'dark:bg-neutral-800');
+                    dot.classList.add('bg-blue-600', 'dark:bg-blue-500');
+                }
+                grid.appendChild(dot);
+            }
+        }
+
+        // CREATE TEMPLATE MODAL SUB-CONTROLLERS
+        function renderModalExercisesSelector() {
+            const container = document.getElementById('modal-exercises-selector');
+            container.innerHTML = '';
+
+            for(let muscle in EXERCISE_CATALOG) {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = "space-y-1.5";
+                groupDiv.innerHTML = `<h5 class="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1">${muscle}</h5>`;
+                
+                const listGrid = document.createElement('div');
+                listGrid.className = "grid grid-cols-1 gap-1";
+
+                EXERCISE_CATALOG[muscle].forEach(ex => {
+                    const row = document.createElement('label');
+                    row.className = "flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-[#0F1115] border border-neutral-200 dark:border-neutral-800 text-xs font-medium cursor-pointer";
+                    row.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <span>${ex.icon}</span>
+                            <span>${ex.name}</span>
+                        </div>
+                        <input type="checkbox" value="${ex.id}" class="rounded border-neutral-800 text-blue-500 focus:ring-0 focus:ring-offset-0 w-4 h-4">
+                    `;
+                    listGrid.appendChild(row);
+                });
+
+                groupDiv.appendChild(listGrid);
+                container.appendChild(groupDiv);
+            }
+        }
+
+        function openCreateTemplateModal() {
+            const modal = document.getElementById('modal-create-template');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('translate-y-10');
+            }, 10);
+        }
+
+        function closeCreateTemplateModal() {
+            const modal = document.getElementById('modal-create-template');
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.add('translate-y-10');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+        }
+
+        function saveNewTemplate() {
+            const nameInput = document.getElementById('new-template-name');
+            const name = nameInput.value.trim();
+            if(!name) { alert('Inserisci un nome valido per la scheda!'); return; }
+
+            const checkedBoxes = document.querySelectorAll('#modal-exercises-selector input[type="checkbox"]:checked');
+            const selectedExerciseIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+            if(selectedExerciseIds.length === 0) { alert('Seleziona almeno un esercizio dalla lista!'); return; }
+
+            const newTmpl = {
+                id: 'tmpl_' + Date.now(),
+                name: name,
+                exercises: selectedExerciseIds
+            };
+
+            templates.push(newTmpl);
+            localStorage.setItem('gym_templates', JSON.stringify(templates));
+
+            // Reset UI states
+            nameInput.value = '';
+            document.querySelectorAll('#modal-exercises-selector input[type="checkbox"]').forEach(cb => cb.checked = false);
+            
+            closeCreateTemplateModal();
+            renderTemplatesList();
+        }
+
+        function deleteTemplate(id) {
+            if(confirm('Vuoi davvero cancellare permanentemente questa scheda dal database?')) {
+                templates = templates.filter(t => t.id !== id);
+                localStorage.setItem('gym_templates', JSON.stringify(templates));
+                renderTemplatesList();
+            }
+        }
+
+        // SYSTEM THEME MANAGER UTILITIES (Light / Dark Mode Router)
+        function initTheme() {
+            if (localStorage.theme === 'light' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        function setupThemeToggleListener() {
+            document.getElementById('themeToggle').addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.theme = 'light';
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.theme = 'dark';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
